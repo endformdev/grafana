@@ -21,7 +21,7 @@ env:
 jobs:
   build-grafana:
     name: Build & Package Grafana
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404-arm
     permissions:
       contents: read
     steps:
@@ -88,7 +88,7 @@ jobs:
     needs:
       - build-grafana
     name: Playwright E2E tests (${{ matrix.shard }}/${{ matrix.shardTotal }})
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-8vcpu-ubuntu-2404-arm
     permissions:
       contents: read
 
