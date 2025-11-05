@@ -16118,6 +16118,57 @@ __metadata:
   languageName: node
   linkType: hard
 
+"endform-darwin-arm64@npm:0.45.10":
+  version: 0.45.10
+  resolution: "endform-darwin-arm64@npm:0.45.10"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"endform-darwin-x86@npm:0.45.10":
+  version: 0.45.10
+  resolution: "endform-darwin-x86@npm:0.45.10"
+  conditions: os=darwin & cpu=x86
+  languageName: node
+  linkType: hard
+
+"endform-linux-arm64@npm:0.45.10":
+  version: 0.45.10
+  resolution: "endform-linux-arm64@npm:0.45.10"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"endform-linux-x86@npm:0.45.10":
+  version: 0.45.10
+  resolution: "endform-linux-x86@npm:0.45.10"
+  conditions: os=linux & cpu=x86
+  languageName: node
+  linkType: hard
+
+"endform@npm:^0.45.10":
+  version: 0.45.10
+  resolution: "endform@npm:0.45.10"
+  dependencies:
+    endform-darwin-arm64: "npm:0.45.10"
+    endform-darwin-x86: "npm:0.45.10"
+    endform-linux-arm64: "npm:0.45.10"
+    endform-linux-x86: "npm:0.45.10"
+  dependenciesMeta:
+    endform-darwin-arm64:
+      optional: true
+    endform-darwin-x86:
+      optional: true
+    endform-linux-arm64:
+      optional: true
+    endform-linux-x86:
+      optional: true
+  bin:
+    endform: bin/endform
+  checksum: 10/400e818616be580c1a4228f57e72f6f04a56e1abe0a12e5647c4ebbe96e7acd76a47a75e7422af6b8de44d308ba0e626b88efd302c246540a554e79971d77dd9
+  languageName: node
+  linkType: hard
+
 "engine.io-parser@npm:~5.2.1":
   version: 5.2.3
   resolution: "engine.io-parser@npm:5.2.3"
@@ -19004,6 +19055,7 @@ __metadata:
     date-fns: "npm:4.1.0"
     debounce-promise: "npm:3.1.2"
     diff: "npm:^8.0.0"
+    endform: "npm:^0.45.10"
     enquirer: "npm:^2.4.1"
     esbuild: "npm:0.25.8"
     esbuild-loader: "npm:4.3.0"
