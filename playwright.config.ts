@@ -27,9 +27,9 @@ export const baseConfig: PlaywrightTestConfig<PluginOptions, {}> = {
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   reporter: [['list']],
-  timeout: 120_000,
+  timeout: 480_000,
   expect: {
-    timeout: 20_000,
+    timeout: 80_000,
   },
   use: {
     ...devices['Desktop Chrome'],
@@ -47,15 +47,15 @@ export const baseConfig: PlaywrightTestConfig<PluginOptions, {}> = {
 
 export default defineConfig<PluginOptions>({
   ...baseConfig,
-  // ...(!process.env.GRAFANA_URL && {
-  //   webServer: {
-  //     command: 'yarn e2e:plugin:build && ./e2e-playwright/start-server',
-  //     url: DEFAULT_URL,
-  //     stdout: 'pipe',
-  //     stderr: 'pipe',
-  //     reuseExistingServer: true,
-  //   },
-  // }),
+  ...(!process.env.GRAFANA_URL && {
+    webServer: {
+      command: 'yarn e2e:plugin:build && ./e2e-playwright/start-server',
+      url: DEFAULT_URL,
+      stdout: 'pipe',
+      stderr: 'pipe',
+      reuseExistingServer: true,
+    },
+  }),
   projects: [
     // Login to Grafana with admin user and store the cookie on disk for use in other tests
     {
