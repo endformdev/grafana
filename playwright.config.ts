@@ -50,7 +50,7 @@ export default defineConfig<PluginOptions>({
   ...(!process.env.GRAFANA_URL && {
     webServer: {
       command: 'yarn e2e:plugin:build && ./e2e-playwright/start-server',
-      url: DEFAULT_URL,
+      port: 3001,
       stdout: 'pipe',
       stderr: 'pipe',
       reuseExistingServer: true,
