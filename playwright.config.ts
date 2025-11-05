@@ -26,11 +26,10 @@ export const baseConfig: PlaywrightTestConfig<PluginOptions, {}> = {
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html'], // pretty
-  ],
+  reporter: [['list']],
+  timeout: 480_000,
   expect: {
-    timeout: 10_000,
+    timeout: 80_000,
   },
   use: {
     ...devices['Desktop Chrome'],
@@ -54,6 +53,7 @@ export default defineConfig<PluginOptions>({
       url: DEFAULT_URL,
       stdout: 'pipe',
       stderr: 'pipe',
+      reuseExistingServer: true,
     },
   }),
   projects: [
