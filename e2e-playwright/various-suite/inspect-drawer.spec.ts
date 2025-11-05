@@ -1,73 +1,63 @@
 import { Page } from 'playwright-core';
 
-import { test, expect, DashboardPage, E2ESelectorGroups } from '@grafana/plugin-e2e';
+import { DashboardPage, E2ESelectorGroups, expect, test } from '@grafana/plugin-e2e';
 
 const PANEL_UNDER_TEST = 'Value reducers 1';
 
-test.describe(
-  'Inspect drawer tests',
-  {
-    tag: ['@various'],
-  },
-  () => {
-    test('Tests various Inspect Drawer scenarios', async ({ gotoDashboardPage, selectors, page }) => {
-      const dashboardPage = await gotoDashboardPage({ uid: 'wfTJJL5Wz' });
+test.describe('Inspect drawer tests', () => {
+  test('Tests various Inspect Drawer scenarios', async ({ gotoDashboardPage, selectors, page }) => {
+    const dashboardPage = await gotoDashboardPage({ uid: 'wfTJJL5Wz' });
 
-      const panel = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title(PANEL_UNDER_TEST));
-      await panel.scrollIntoViewIfNeeded();
-      await expect(panel).toBeVisible();
+    const panel = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title(PANEL_UNDER_TEST));
+    await panel.scrollIntoViewIfNeeded();
+    await expect(panel).toBeVisible();
 
-      // Open panel menu
-      const panelMenu = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menu(PANEL_UNDER_TEST));
-      await panelMenu.click({ force: true });
+    // Open panel menu
+    const panelMenu = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menu(PANEL_UNDER_TEST));
+    await panelMenu.click({ force: true });
 
-      // Hover over Inspect menu item to show submenu
-      const inspectMenuItem = dashboardPage.getByGrafanaSelector(
-        selectors.components.Panels.Panel.menuItems('Inspect')
-      );
-      await inspectMenuItem.hover();
+    // Hover over Inspect menu item to show submenu
+    const inspectMenuItem = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menuItems('Inspect'));
+    await inspectMenuItem.hover();
 
-      // Click on Data submenu item
-      const dataMenuItem = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menuItems('Data'));
-      await dataMenuItem.click();
+    // Click on Data submenu item
+    const dataMenuItem = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menuItems('Data'));
+    await dataMenuItem.click();
 
-      await expectDrawerTabsAndContent(dashboardPage, selectors, page);
+    await expectDrawerTabsAndContent(dashboardPage, selectors, page);
 
-      await expectDrawerClose(dashboardPage, selectors);
+    await expectDrawerClose(dashboardPage, selectors);
 
-      await expectSubMenuScenario(dashboardPage, selectors, page, 'Data');
-      await expectSubMenuScenario(dashboardPage, selectors, page, 'Query');
-      await expectSubMenuScenario(dashboardPage, selectors, page, 'Panel JSON', 'JSON');
+    await expectSubMenuScenario(dashboardPage, selectors, page, 'Data');
+    await expectSubMenuScenario(dashboardPage, selectors, page, 'Query');
+    await expectSubMenuScenario(dashboardPage, selectors, page, 'Panel JSON', 'JSON');
 
-      // Test edit panel scenario
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.Panels.Panel.menu(PANEL_UNDER_TEST))
-        .click({ force: true });
-      const editMenuItem = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menuItems('Edit'));
-      await editMenuItem.click();
+    // Test edit panel scenario
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.Panels.Panel.menu(PANEL_UNDER_TEST))
+      .click({ force: true });
+    const editMenuItem = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.menuItems('Edit'));
+    await editMenuItem.click();
 
-      const queryInspectorButton = dashboardPage.getByGrafanaSelector(
-        selectors.components.QueryTab.queryInspectorButton
-      );
-      await expect(queryInspectorButton).toBeVisible();
-      await queryInspectorButton.click();
+    const queryInspectorButton = dashboardPage.getByGrafanaSelector(selectors.components.QueryTab.queryInspectorButton);
+    await expect(queryInspectorButton).toBeVisible();
+    await queryInspectorButton.click();
 
-      const drawerTitle = dashboardPage.getByGrafanaSelector(
-        selectors.components.Drawer.General.title(`Inspect: ${PANEL_UNDER_TEST}`)
-      );
-      await expect(drawerTitle).toBeVisible();
+    const drawerTitle = dashboardPage.getByGrafanaSelector(
+      selectors.components.Drawer.General.title(`Inspect: ${PANEL_UNDER_TEST}`)
+    );
+    await expect(drawerTitle).toBeVisible();
 
-      const queryTab = dashboardPage.getByGrafanaSelector(selectors.components.Tab.title('Query'));
-      await expect(queryTab).toBeVisible();
+    const queryTab = dashboardPage.getByGrafanaSelector(selectors.components.Tab.title('Query'));
+    await expect(queryTab).toBeVisible();
 
-      // Query should be the active tab
-      await expect(queryTab).toHaveClass(/.*-activeTabStyle/);
+    // Query should be the active tab
+    await expect(queryTab).toHaveClass(/.*-activeTabStyle/);
 
-      const queryContent = dashboardPage.getByGrafanaSelector(selectors.components.PanelInspector.Query.content);
-      await expect(queryContent).toBeVisible();
-    });
-  }
-);
+    const queryContent = dashboardPage.getByGrafanaSelector(selectors.components.PanelInspector.Query.content);
+    await expect(queryContent).toBeVisible();
+  });
+});
 
 const expectDrawerTabsAndContent = async (dashboardPage: DashboardPage, selectors: E2ESelectorGroups, page: Page) => {
   const drawerTitle = dashboardPage.getByGrafanaSelector(

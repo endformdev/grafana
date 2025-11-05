@@ -1,13 +1,13 @@
 import fs from 'fs';
 import * as prom from 'prom-client';
 
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
 import { RequestsRecorder } from '../utils/RequestsRecorder';
 
 const DASH_PATH = '/d/bds35fot3cv7kb/mostly-blank-dashboard';
 
-test('payload-size', { tag: '@performance' }, async ({ page }) => {
+test('payload-size', async ({ page }) => {
   const promRegistry = new prom.Registry();
 
   const testRunTimeGauge = new prom.Gauge({

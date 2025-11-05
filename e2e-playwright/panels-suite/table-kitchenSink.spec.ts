@@ -1,6 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
-import { test, expect, E2ESelectorGroups } from '@grafana/plugin-e2e';
+import { E2ESelectorGroups, expect, test } from '@grafana/plugin-e2e';
 
 import { getCell, getCellHeight, getColumnIdx } from './table-utils';
 
@@ -26,7 +26,7 @@ const disableAllTextWrap = async (loc: Page | Locator, selectors: E2ESelectorGro
   }
 };
 
-test.describe('Panels test: Table - Kitchen Sink', { tag: ['@panels', '@table'] }, () => {
+test.describe('Panels test: Table - Kitchen Sink', () => {
   test('Tests word wrap, hover overflow, max cell height, and cell inspect', async ({
     gotoDashboardPage,
     selectors,

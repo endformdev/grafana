@@ -1,10 +1,10 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
 const DASHBOARD_UID = '5Y0jv6pVz';
 
 // test.use();
 
-test.describe('Panels test: Heatmap', { tag: ['@panels', '@heatmap'] }, () => {
+test.describe('Panels test: Heatmap', () => {
   test('renders successfully', async ({ gotoDashboardPage, selectors, page }) => {
     const dashboardPage = await gotoDashboardPage({
       uid: DASHBOARD_UID,

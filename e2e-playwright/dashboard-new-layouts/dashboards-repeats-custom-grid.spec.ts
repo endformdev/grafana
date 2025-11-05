@@ -1,15 +1,15 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
 import testV2DashWithRepeats from '../dashboards/V2DashWithRepeats.json';
 
 import {
   checkRepeatedPanelTitles,
-  verifyChanges,
-  movePanel,
   getPanelPosition,
-  saveDashboard,
-  importTestDashboard,
   goToEmbeddedPanel,
+  importTestDashboard,
+  movePanel,
+  saveDashboard,
+  verifyChanges,
 } from './utils';
 
 const repeatTitleBase = 'repeat - ';
@@ -28,384 +28,374 @@ test.use({
   viewport: { width: 1920, height: 1080 },
 });
 
-test.describe(
-  'Repeats - Dashboard custom grid',
-  {
-    tag: ['@dashboards'],
-  },
-  () => {
-    test('can enable repeats', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Custom grid repeats - add repeats');
+test.describe('Repeats - Dashboard custom grid', () => {
+  test('can enable repeats', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Custom grid repeats - add repeats');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel')).first().click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel')).first().click();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
-        .fill(`${repeatTitleBase}$c1`);
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
+      .fill(`${repeatTitleBase}$c1`);
 
-      const repeatOptionsGroup = dashboardPage.getByGrafanaSelector(
-        selectors.components.OptionsGroup.group('repeat-options')
-      );
-      // expand repeat options dropdown
-      await repeatOptionsGroup.getByRole('button').first().click();
-      // find repeat variable dropdown
-      await repeatOptionsGroup.getByRole('combobox').click();
-      await page.getByRole('option', { name: 'c1' }).click();
+    const repeatOptionsGroup = dashboardPage.getByGrafanaSelector(
+      selectors.components.OptionsGroup.group('repeat-options')
+    );
+    // expand repeat options dropdown
+    await repeatOptionsGroup.getByRole('button').first().click();
+    // find repeat variable dropdown
+    await repeatOptionsGroup.getByRole('combobox').click();
+    await page.getByRole('option', { name: 'c1' }).click();
 
-      await checkRepeatedPanelTitles(dashboardPage, selectors, repeatTitleBase, repeatOptions);
+    await checkRepeatedPanelTitles(dashboardPage, selectors, repeatTitleBase, repeatOptions);
 
-      await saveDashboard(dashboardPage, page, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, page, selectors);
+    await page.reload();
 
-      await checkRepeatedPanelTitles(dashboardPage, selectors, repeatTitleBase, repeatOptions);
-    });
+    await checkRepeatedPanelTitles(dashboardPage, selectors, repeatTitleBase, repeatOptions);
+  });
 
-    test('can update repeats with variable change', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - update on variable change',
-        JSON.stringify(testV2DashWithRepeats)
-      );
+  test('can update repeats with variable change', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - update on variable change',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await dashboardPage
-        .getByGrafanaSelector(
-          selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownValueLinkTexts(repeatOptions.join(','))
-        )
-        .click();
+    await dashboardPage
+      .getByGrafanaSelector(
+        selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownValueLinkTexts(repeatOptions.join(','))
+      )
+      .click();
 
-      // deselect last variable option
-      await dashboardPage
-        .getByGrafanaSelector(
-          selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownOptionTexts(`${repeatOptions.at(-1)}`)
-        )
-        .click();
-      await page.locator('body').click({ position: { x: 0, y: 0 } }); // blur select
+    // deselect last variable option
+    await dashboardPage
+      .getByGrafanaSelector(
+        selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownOptionTexts(`${repeatOptions.at(-1)}`)
+      )
+      .click();
+    await page.locator('body').click({ position: { x: 0, y: 0 } }); // blur select
 
-      // verify that repeats are present for first 3 values
-      await checkRepeatedPanelTitles(dashboardPage, selectors, repeatTitleBase, repeatOptions.slice(0, -1));
+    // verify that repeats are present for first 3 values
+    await checkRepeatedPanelTitles(dashboardPage, selectors, repeatTitleBase, repeatOptions.slice(0, -1));
 
-      // verify there is no repeat with last value
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
-        )
-      ).toBeHidden();
-    });
-    test('can update repeats in edit pane', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - update through edit pane',
-        JSON.stringify(testV2DashWithRepeats)
-      );
-
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
-
-      // select first/original repeat panel to activate edit pane
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`))
-        .click();
-
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
-        .fill(`${newTitleBase}$c1`);
-      await dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title')).blur();
-
-      await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
-
-      await saveDashboard(dashboardPage, page, selectors);
-      await page.reload();
-
-      await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
-    });
-
-    test('can update repeats in panel editor', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - update through panel editor',
-        JSON.stringify(testV2DashWithRepeats)
-      );
-
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
-
-      // selecting last repeat
-      const panel = dashboardPage.getByGrafanaSelector(
+    // verify there is no repeat with last value
+    await expect(
+      dashboardPage.getByGrafanaSelector(
         selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
-      );
-      await panel.hover();
-      await page.keyboard.press('e');
+      )
+    ).toBeHidden();
+  });
+  test('can update repeats in edit pane', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - update through edit pane',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
-      ).toBeHidden(); // verifying that panel editor loaded
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      // verify original repeat panel is loaded
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
-        )
-      ).toBeVisible();
+    // select first/original repeat panel to activate edit pane
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`))
+      .click();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
-        .fill(`${newTitleBase}$c1`);
-      await dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title')).blur();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
+      .fill(`${newTitleBase}$c1`);
+    await dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title')).blur();
 
-      // playwright too fast, verifying JSON diff that changes landed
-      await verifyChanges(dashboardPage, page, selectors, newTitleBase);
+    await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
 
-      // verify panel title change in panel editor UI
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${newTitleBase}${repeatOptions.at(0)}`)
-        )
-      ).toBeVisible();
+    await saveDashboard(dashboardPage, page, selectors);
+    await page.reload();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
-        .click();
+    await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
+  });
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
-      ).toBeVisible(); // verifying that dashboard loaded
+  test('can update repeats in panel editor', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - update through panel editor',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await saveDashboard(dashboardPage, page, selectors);
-      await page.reload();
+    // selecting last repeat
+    const panel = dashboardPage.getByGrafanaSelector(
+      selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
+    );
+    await panel.hover();
+    await page.keyboard.press('e');
 
-      await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
-    });
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
+    ).toBeHidden(); // verifying that panel editor loaded
 
-    test('can update repeats in panel editor when loaded directly', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - update through directly loaded panel editor',
-        JSON.stringify(testV2DashWithRepeats)
-      );
+    // verify original repeat panel is loaded
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
+      )
+    ).toBeVisible();
 
-      // loading directly into panel editor
-      await page.goto(`${page.url()}&editPanel=1`);
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
+      .fill(`${newTitleBase}$c1`);
+    await dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title')).blur();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
-      ).toBeHidden(); // verifying that panel editor loaded
+    // playwright too fast, verifying JSON diff that changes landed
+    await verifyChanges(dashboardPage, page, selectors, newTitleBase);
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
-        )
-      ).toBeVisible();
+    // verify panel title change in panel editor UI
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${newTitleBase}${repeatOptions.at(0)}`)
+      )
+    ).toBeVisible();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
-        .fill(`${newTitleBase}$c1`);
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
+      .click();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title')).blur();
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
+    ).toBeVisible(); // verifying that dashboard loaded
 
-      // playwright too fast, verifying JSON diff that changes landed
-      await verifyChanges(dashboardPage, page, selectors, newTitleBase);
+    await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${newTitleBase}${repeatOptions.at(0)}`)
-        )
-      ).toBeVisible();
+    await saveDashboard(dashboardPage, page, selectors);
+    await page.reload();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
-        .click();
+    await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
+  });
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
-      ).toBeVisible(); // verifying that dashboard loaded
+  test('can update repeats in panel editor when loaded directly', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - update through directly loaded panel editor',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
+    // loading directly into panel editor
+    await page.goto(`${page.url()}&editPanel=1`);
 
-      await saveDashboard(dashboardPage, page, selectors);
-      await page.reload();
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
+    ).toBeHidden(); // verifying that panel editor loaded
 
-      await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
-    });
-    test('can move repeated panels', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - move repeated panels',
-        JSON.stringify(testV2DashWithRepeats)
-      );
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
+      )
+    ).toBeVisible();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title'))
+      .fill(`${newTitleBase}$c1`);
 
-      await movePanel(dashboardPage, selectors, `${repeatTitleBase}${repeatOptions.at(0)}`, 'New panel');
+    await dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.OptionsPane.fieldInput('Title')).blur();
 
-      // verify move by panel title order
-      expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).first()).toHaveText(
-        'New panel'
-      );
-      expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).last()).toHaveText(
-        `${repeatTitleBase}${repeatOptions.at(-1)}`
-      );
+    // playwright too fast, verifying JSON diff that changes landed
+    await verifyChanges(dashboardPage, page, selectors, newTitleBase);
 
-      // verify move by panel position
-      let repeatedPanel = await getPanelPosition(dashboardPage, selectors, `${repeatTitleBase}${repeatOptions.at(0)}`);
-      let normalPanel = await getPanelPosition(dashboardPage, selectors, 'New panel');
-      expect(normalPanel?.y).toBeLessThan(repeatedPanel?.y || 0);
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${newTitleBase}${repeatOptions.at(0)}`)
+      )
+    ).toBeVisible();
 
-      await saveDashboard(dashboardPage, page, selectors);
-      await page.reload();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
+      .click();
 
-      const repeatedPanel2 = await getPanelPosition(
-        dashboardPage,
-        selectors,
-        `${repeatTitleBase}${repeatOptions.at(0)}`
-      );
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.DashboardEditPaneSplitter.primaryBody)
+    ).toBeVisible(); // verifying that dashboard loaded
 
-      const normalPanel2 = await getPanelPosition(dashboardPage, selectors, 'New panel');
+    await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
 
-      expect(normalPanel2?.y).toBeLessThan(repeatedPanel2?.y || 0);
-      expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).first()).toHaveText(
-        'New panel'
-      );
-      expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).last()).toHaveText(
-        `${repeatTitleBase}${repeatOptions.at(-1)}`
-      );
-    });
-    test('can view repeated panel', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - move repeated panels',
-        JSON.stringify(testV2DashWithRepeats)
-      );
+    await saveDashboard(dashboardPage, page, selectors);
+    await page.reload();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`))
-        .hover();
-      await page.keyboard.press('v');
+    await checkRepeatedPanelTitles(dashboardPage, selectors, newTitleBase, repeatOptions);
+  });
+  test('can move repeated panels', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - move repeated panels',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
-        )
-      ).toBeHidden();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
-        )
-      ).toBeVisible();
+    await movePanel(dashboardPage, selectors, `${repeatTitleBase}${repeatOptions.at(0)}`, 'New panel');
 
-      const repeatedPanelUrl = page.url();
+    // verify move by panel title order
+    expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).first()).toHaveText(
+      'New panel'
+    );
+    expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).last()).toHaveText(
+      `${repeatTitleBase}${repeatOptions.at(-1)}`
+    );
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
-        .click();
+    // verify move by panel position
+    let repeatedPanel = await getPanelPosition(dashboardPage, selectors, `${repeatTitleBase}${repeatOptions.at(0)}`);
+    let normalPanel = await getPanelPosition(dashboardPage, selectors, 'New panel');
+    expect(normalPanel?.y).toBeLessThan(repeatedPanel?.y || 0);
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`))
-        .hover();
-      await page.keyboard.press('v');
+    await saveDashboard(dashboardPage, page, selectors);
+    await page.reload();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
-        )
-      ).toBeHidden();
+    const repeatedPanel2 = await getPanelPosition(dashboardPage, selectors, `${repeatTitleBase}${repeatOptions.at(0)}`);
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
-        )
-      ).toBeVisible();
+    const normalPanel2 = await getPanelPosition(dashboardPage, selectors, 'New panel');
 
-      // load view panel directly
-      await page.goto(repeatedPanelUrl);
+    expect(normalPanel2?.y).toBeLessThan(repeatedPanel2?.y || 0);
+    expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).first()).toHaveText(
+      'New panel'
+    );
+    expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).last()).toHaveText(
+      `${repeatTitleBase}${repeatOptions.at(-1)}`
+    );
+  });
+  test('can view repeated panel', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - move repeated panels',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
-        )
-      ).toBeVisible();
-    });
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`))
+      .hover();
+    await page.keyboard.press('v');
 
-    test('can view embedded repeated panel', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - view embedded repeated panel',
-        JSON.stringify(testV2DashWithRepeats)
-      );
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
+      )
+    ).toBeHidden();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`))
-        .hover();
-      await page.keyboard.press('p+e');
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
+      )
+    ).toBeVisible();
 
-      await goToEmbeddedPanel(page);
+    const repeatedPanelUrl = page.url();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
-        )
-      ).toBeVisible();
-    });
-    test('can remove repeats', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(
-        page,
-        selectors,
-        'Custom grid repeats - remove repeats',
-        JSON.stringify(testV2DashWithRepeats)
-      );
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
+      .click();
 
-      // verify 6 panels are present (4 repeats and 2 normal)
-      expect(
-        await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).all()
-      ).toHaveLength(6);
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`))
+      .hover();
+    await page.keyboard.press('v');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
+      )
+    ).toBeHidden();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`))
-        .click();
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`)
+      )
+    ).toBeVisible();
 
-      const repeatOptionsGroup = dashboardPage.getByGrafanaSelector(
-        selectors.components.OptionsGroup.group('repeat-options')
-      );
-      // expand repeat options dropdown
-      await repeatOptionsGroup.getByRole('button').first().click();
-      // find repeat variable dropdown
-      await repeatOptionsGroup.getByRole('combobox').first().click();
-      await page.getByRole('option', { name: 'Disable repeating' }).click();
+    // load view panel directly
+    await page.goto(repeatedPanelUrl);
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.join(' + ')}`)
-        )
-      ).toBeVisible();
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
+      )
+    ).toBeVisible();
+  });
 
-      // verify only 3 panels are present
-      expect(
-        await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).all()
-      ).toHaveLength(3);
+  test('can view embedded repeated panel', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - view embedded repeated panel',
+      JSON.stringify(testV2DashWithRepeats)
+    );
 
-      await saveDashboard(dashboardPage, page, selectors);
-      await page.reload();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`))
+      .hover();
+    await page.keyboard.press('p+e');
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.join(' + ')}`)
-        )
-      ).toBeVisible();
+    await goToEmbeddedPanel(page);
 
-      expect(
-        await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).all()
-      ).toHaveLength(3);
-    });
-  }
-);
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(-1)}`)
+      )
+    ).toBeVisible();
+  });
+  test('can remove repeats', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(
+      page,
+      selectors,
+      'Custom grid repeats - remove repeats',
+      JSON.stringify(testV2DashWithRepeats)
+    );
+
+    // verify 6 panels are present (4 repeats and 2 normal)
+    expect(
+      await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).all()
+    ).toHaveLength(6);
+
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.at(0)}`))
+      .click();
+
+    const repeatOptionsGroup = dashboardPage.getByGrafanaSelector(
+      selectors.components.OptionsGroup.group('repeat-options')
+    );
+    // expand repeat options dropdown
+    await repeatOptionsGroup.getByRole('button').first().click();
+    // find repeat variable dropdown
+    await repeatOptionsGroup.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: 'Disable repeating' }).click();
+
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.join(' + ')}`)
+      )
+    ).toBeVisible();
+
+    // verify only 3 panels are present
+    expect(
+      await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).all()
+    ).toHaveLength(3);
+
+    await saveDashboard(dashboardPage, page, selectors);
+    await page.reload();
+
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.Panels.Panel.title(`${repeatTitleBase}${repeatOptions.join(' + ')}`)
+      )
+    ).toBeVisible();
+
+    expect(
+      await dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.headerContainer).all()
+    ).toHaveLength(3);
+  });
+});

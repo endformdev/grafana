@@ -2,10 +2,10 @@ import { expect, test } from '@grafana/plugin-e2e';
 import { AlertVariant } from '@grafana/ui';
 
 import {
-  successfulAnnotationQueryWithData,
-  failedAnnotationQueryWithMultipleErrors,
-  successfulAnnotationQueryWithoutData,
   failedAnnotationQuery,
+  failedAnnotationQueryWithMultipleErrors,
+  successfulAnnotationQueryWithData,
+  successfulAnnotationQueryWithoutData,
 } from '../mocks/queries';
 
 interface Scenario {
@@ -41,7 +41,7 @@ const scenarios: Scenario[] = [
   },
 ];
 
-test.describe('plugin-e2e-api-tests admin', { tag: ['@plugins'] }, () => {
+test.describe('plugin-e2e-api-tests admin', () => {
   for (const scenario of scenarios) {
     test(`annotation query data with ${scenario.name}`, async ({ annotationEditPage, page }) => {
       annotationEditPage.mockQueryDataResponse(scenario.mock, scenario.status);

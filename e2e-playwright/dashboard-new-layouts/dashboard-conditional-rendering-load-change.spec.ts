@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-import { test, expect, E2ESelectorGroups, DashboardPage, DashboardPageArgs } from '@grafana/plugin-e2e';
+import { DashboardPage, DashboardPageArgs, E2ESelectorGroups, expect, test } from '@grafana/plugin-e2e';
 
 import testDashboard from '../dashboards/DashboardWithAllConditionalRendering.json';
 
@@ -14,7 +14,7 @@ test.use({
   viewport: { width: 1920, height: 1080 },
 });
 
-test.describe('Dashboard - Conditional Rendering - Load and Change', { tag: ['@dashboards'] }, () => {
+test.describe('Dashboard - Conditional Rendering - Load and Change', () => {
   let uid: string;
 
   const loadDashboard = async (

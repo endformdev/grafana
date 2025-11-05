@@ -1,11 +1,11 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
+import { selectors } from '@grafana/e2e-selectors';
 import pluginJson from '../plugin.json';
 import testApp3pluginJson from '../plugins/grafana-extensionexample3-app/plugin.json';
 import { testIds } from '../testIds';
-import { selectors } from '@grafana/e2e-selectors';
 
-test.describe('grafana-extensionstest-app', { tag: ['@plugins'] }, () => {
+test.describe('grafana-extensionstest-app', () => {
   test('should extend the actions menu with a link to a-app plugin', async ({ page }) => {
     await page.goto(`/a/${pluginJson.id}/added-links`);
     const section = await page.getByTestId(testIds.addedLinksPage.section1);

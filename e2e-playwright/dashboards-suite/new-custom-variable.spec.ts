@@ -1,4 +1,4 @@
-import { test, expect, DashboardPage, E2ESelectorGroups } from '@grafana/plugin-e2e';
+import { DashboardPage, E2ESelectorGroups, expect, test } from '@grafana/plugin-e2e';
 
 const PAGE_UNDER_TEST = 'kVi2Gex7z/test-variable-output';
 const DASHBOARD_NAME = 'Test variable output';
@@ -56,72 +56,66 @@ test.use({
   },
 });
 
-test.describe(
-  'Variables - Custom',
-  {
-    tag: ['@dashboards'],
-  },
-  () => {
-    test('can add a custom template variable', async ({ page, gotoDashboardPage, selectors }) => {
-      const dashboardPage = await gotoDashboardPage({
-        uid: PAGE_UNDER_TEST,
-        queryParams: new URLSearchParams({ orgId: '1', editview: 'variables' }),
-      });
-      await expect(page.getByText(DASHBOARD_NAME)).toBeVisible();
-
-      // Create a new "Custom" variable
-      await dashboardPage.getByGrafanaSelector(selectors.components.CallToActionCard.buttonV2('Add variable')).click();
-      await fillInCustomVariable(dashboardPage, selectors, 'VariableUnderTest', 'Variable under test', 'one,two,three');
-      await assertPreviewValues(dashboardPage, selectors, ['one', 'two', 'three']);
-
-      // Navigate back to the homepage and change the selected variable value
-      await dashboardPage
-        .getByGrafanaSelector(selectors.pages.Dashboard.Settings.Variables.Edit.General.applyButton)
-        .click();
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
-        .click();
-      await dashboardPage
-        .getByGrafanaSelector(selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownValueLinkTexts('one'))
-        .click();
-      await dashboardPage.getByGrafanaSelector(selectors.components.Select.option).filter({ hasText: 'two' }).click();
-
-      // Assert it was rendered
-      await expect(page.locator('.markdown-html').first()).toContainText('VariableUnderTest: two');
+test.describe('Variables - Custom', () => {
+  test('can add a custom template variable', async ({ page, gotoDashboardPage, selectors }) => {
+    const dashboardPage = await gotoDashboardPage({
+      uid: PAGE_UNDER_TEST,
+      queryParams: new URLSearchParams({ orgId: '1', editview: 'variables' }),
     });
+    await expect(page.getByText(DASHBOARD_NAME)).toBeVisible();
 
-    test('can add a custom template variable with labels', async ({ page, gotoDashboardPage, selectors }) => {
-      const dashboardPage = await gotoDashboardPage({
-        uid: PAGE_UNDER_TEST,
-        queryParams: new URLSearchParams({ orgId: '1', editview: 'variables' }),
-      });
-      await expect(page.getByText(DASHBOARD_NAME)).toBeVisible();
+    // Create a new "Custom" variable
+    await dashboardPage.getByGrafanaSelector(selectors.components.CallToActionCard.buttonV2('Add variable')).click();
+    await fillInCustomVariable(dashboardPage, selectors, 'VariableUnderTest', 'Variable under test', 'one,two,three');
+    await assertPreviewValues(dashboardPage, selectors, ['one', 'two', 'three']);
 
-      // Create a new "Custom" variable
-      await dashboardPage.getByGrafanaSelector(selectors.components.CallToActionCard.buttonV2('Add variable')).click();
-      await fillInCustomVariable(
-        dashboardPage,
-        selectors,
-        'VariableUnderTest',
-        'Variable under test',
-        'One : 1,Two : 2, Three : 3'
-      );
-      await assertPreviewValues(dashboardPage, selectors, ['One', 'Two', 'Three']);
+    // Navigate back to the homepage and change the selected variable value
+    await dashboardPage
+      .getByGrafanaSelector(selectors.pages.Dashboard.Settings.Variables.Edit.General.applyButton)
+      .click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
+      .click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownValueLinkTexts('one'))
+      .click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.Select.option).filter({ hasText: 'two' }).click();
 
-      // Navigate back to the homepage and change the selected variable value
-      await dashboardPage
-        .getByGrafanaSelector(selectors.pages.Dashboard.Settings.Variables.Edit.General.applyButton)
-        .click();
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
-        .click();
-      await dashboardPage
-        .getByGrafanaSelector(selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownValueLinkTexts('1'))
-        .click();
-      await dashboardPage.getByGrafanaSelector(selectors.components.Select.option).filter({ hasText: 'Two' }).click();
+    // Assert it was rendered
+    await expect(page.locator('.markdown-html').first()).toContainText('VariableUnderTest: two');
+  });
 
-      // Assert it was rendered (the value "2" should be displayed, not the label "Two")
-      await expect(page.locator('.markdown-html').first()).toContainText('VariableUnderTest: 2');
+  test('can add a custom template variable with labels', async ({ page, gotoDashboardPage, selectors }) => {
+    const dashboardPage = await gotoDashboardPage({
+      uid: PAGE_UNDER_TEST,
+      queryParams: new URLSearchParams({ orgId: '1', editview: 'variables' }),
     });
-  }
-);
+    await expect(page.getByText(DASHBOARD_NAME)).toBeVisible();
+
+    // Create a new "Custom" variable
+    await dashboardPage.getByGrafanaSelector(selectors.components.CallToActionCard.buttonV2('Add variable')).click();
+    await fillInCustomVariable(
+      dashboardPage,
+      selectors,
+      'VariableUnderTest',
+      'Variable under test',
+      'One : 1,Two : 2, Three : 3'
+    );
+    await assertPreviewValues(dashboardPage, selectors, ['One', 'Two', 'Three']);
+
+    // Navigate back to the homepage and change the selected variable value
+    await dashboardPage
+      .getByGrafanaSelector(selectors.pages.Dashboard.Settings.Variables.Edit.General.applyButton)
+      .click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.backToDashboardButton)
+      .click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.pages.Dashboard.SubMenu.submenuItemValueDropDownValueLinkTexts('1'))
+      .click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.Select.option).filter({ hasText: 'Two' }).click();
+
+    // Assert it was rendered (the value "2" should be displayed, not the label "Two")
+    await expect(page.locator('.markdown-html').first()).toContainText('VariableUnderTest: 2');
+  });
+});

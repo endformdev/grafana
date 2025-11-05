@@ -1,8 +1,8 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
 test.use({ viewport: { width: 1280, height: 1080 } });
 
-test.describe('Panels test: Table - Sparkline', { tag: ['@panels', '@table'] }, () => {
+test.describe('Panels test: Table - Sparkline', () => {
   test('Tests sparkline tables are successfully rendered', async ({ gotoDashboardPage, selectors, page }) => {
     await gotoDashboardPage({
       uid: 'd6373b49-1957-4f00-9218-ee2120d3ecd9',

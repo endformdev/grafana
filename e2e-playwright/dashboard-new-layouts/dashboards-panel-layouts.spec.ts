@@ -1,6 +1,6 @@
 import { Page } from 'playwright-core';
 
-import { test, expect, E2ESelectorGroups, DashboardPage } from '@grafana/plugin-e2e';
+import { DashboardPage, E2ESelectorGroups, expect, test } from '@grafana/plugin-e2e';
 
 import testV2Dashboard from '../dashboards/TestV2Dashboard.json';
 
@@ -17,358 +17,348 @@ test.use({
   viewport: { width: 1920, height: 1080 },
 });
 
-test.describe(
-  'Dashboard Panel Layouts',
-  {
-    tag: ['@dashboards'],
-  },
-  () => {
-    test('can switch to auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Switch to auto grid');
+test.describe('Dashboard Panel Layouts', () => {
+  test('can switch to auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Switch to auto grid');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await checkAutoGridLayoutInputs(dashboardPage, selectors);
+    await checkAutoGridLayoutInputs(dashboardPage, selectors);
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await checkAutoGridLayoutInputs(dashboardPage, selectors);
-    });
+    await checkAutoGridLayoutInputs(dashboardPage, selectors);
+  });
 
-    test('can change min column width in auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Set min column width');
+  test('can change min column width in auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Set min column width');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      // Get initial positions - standard width should have panels on different rows
-      const firstPanelTop = await getPanelTop(dashboardPage, selectors);
-      const lastPanel = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel')).last();
+    // Get initial positions - standard width should have panels on different rows
+    const firstPanelTop = await getPanelTop(dashboardPage, selectors);
+    const lastPanel = dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel')).last();
 
-      expect(async () => {
-        const lastPanelBox = await lastPanel.boundingBox();
-        const lastPanelTop = lastPanelBox?.y || 0;
+    expect(async () => {
+      const lastPanelBox = await lastPanel.boundingBox();
+      const lastPanelTop = lastPanelBox?.y || 0;
 
-        // Verify standard layout has panels on different rows
-        expect(lastPanelTop).toBeGreaterThan(firstPanelTop);
-      }).toPass();
+      // Verify standard layout has panels on different rows
+      expect(lastPanelTop).toBeGreaterThan(firstPanelTop);
+    }).toPass();
 
-      // Change to narrow min column width
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
-        .click();
-      await page.getByRole('option', { name: 'Narrow' }).click();
+    // Change to narrow min column width
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
+      .click();
+    await page.getByRole('option', { name: 'Narrow' }).click();
 
-      // Verify narrow layout has all panels on same row
-      expect(async () => {
-        const firstPanelTopNarrow = await getPanelTop(dashboardPage, selectors);
-        const lastPanelBoxNarrow = await lastPanel.boundingBox();
-        const lastPanelTopNarrow = lastPanelBoxNarrow?.y || 0;
+    // Verify narrow layout has all panels on same row
+    expect(async () => {
+      const firstPanelTopNarrow = await getPanelTop(dashboardPage, selectors);
+      const lastPanelBoxNarrow = await lastPanel.boundingBox();
+      const lastPanelTopNarrow = lastPanelBoxNarrow?.y || 0;
 
-        expect(lastPanelTopNarrow).toBe(firstPanelTopNarrow);
-      }).toPass();
+      expect(lastPanelTopNarrow).toBe(firstPanelTopNarrow);
+    }).toPass();
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth
-        )
-      ).toHaveValue('Narrow');
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
+    ).toHaveValue('Narrow');
 
-      expect(async () => {
-        const firstPanelTopReload = await getPanelTop(dashboardPage, selectors);
-        const lastPanelBoxReload = await lastPanel.boundingBox();
-        const lastPanelTopReload = lastPanelBoxReload?.y || 0;
+    expect(async () => {
+      const firstPanelTopReload = await getPanelTop(dashboardPage, selectors);
+      const lastPanelBoxReload = await lastPanel.boundingBox();
+      const lastPanelTopReload = lastPanelBoxReload?.y || 0;
 
-        expect(lastPanelTopReload).toBe(firstPanelTopReload);
-      }).toPass();
-    });
+      expect(lastPanelTopReload).toBe(firstPanelTopReload);
+    }).toPass();
+  });
 
-    test('can change to custom min column width in auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Set custom min column width');
+  test('can change to custom min column width in auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Set custom min column width');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
-        .click();
-      await page.getByRole('option', { name: 'Custom' }).click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
+      .click();
+    await page.getByRole('option', { name: 'Custom' }).click();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customMinColumnWidth)
-        .fill('900');
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customMinColumnWidth)
-        .blur();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customMinColumnWidth)
+      .fill('900');
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customMinColumnWidth)
+      .blur();
 
-      // Changing to 900 custom width should have each panel span the whole row (stacked vertically)
-      await verifyPanelsStackedVertically(dashboardPage, selectors);
+    // Changing to 900 custom width should have each panel span the whole row (stacked vertically)
+    await verifyPanelsStackedVertically(dashboardPage, selectors);
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await verifyPanelsStackedVertically(dashboardPage, selectors);
+    await verifyPanelsStackedVertically(dashboardPage, selectors);
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customMinColumnWidth
-        )
-      ).toHaveValue('900');
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customMinColumnWidth
+      )
+    ).toHaveValue('900');
 
-      await verifyPanelsStackedVertically(dashboardPage, selectors);
+    await verifyPanelsStackedVertically(dashboardPage, selectors);
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.clearCustomMinColumnWidth)
-        .click();
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth
-        )
-      ).toHaveValue('Standard');
-    });
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.clearCustomMinColumnWidth)
+      .click();
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
+    ).toHaveValue('Standard');
+  });
 
-    test('can change max columns in auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Set max columns');
+  test('can change max columns in auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Set max columns');
 
-      await await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel')).first()
-      ).toBeVisible();
+    await await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel')).first()
+    ).toBeVisible();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.maxColumns)
-        .click();
-      await page.getByRole('option', { name: '1', exact: true }).click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.maxColumns)
+      .click();
+    await page.getByRole('option', { name: '1', exact: true }).click();
 
-      // Changing to 1 max column should have each panel span the whole row (stacked vertically)
-      await verifyPanelsStackedVertically(dashboardPage, selectors);
+    // Changing to 1 max column should have each panel span the whole row (stacked vertically)
+    await verifyPanelsStackedVertically(dashboardPage, selectors);
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await verifyPanelsStackedVertically(dashboardPage, selectors);
+    await verifyPanelsStackedVertically(dashboardPage, selectors);
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.maxColumns)
-      ).toHaveValue('1');
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.maxColumns)
+    ).toHaveValue('1');
 
-      await verifyPanelsStackedVertically(dashboardPage, selectors);
-    });
+    await verifyPanelsStackedVertically(dashboardPage, selectors);
+  });
 
-    test('can change row height in auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Set row height');
+  test('can change row height in auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Set row height');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      const regularRowHeight = await getPanelHeight(dashboardPage, selectors);
+    const regularRowHeight = await getPanelHeight(dashboardPage, selectors);
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
-        .click();
-      await page.getByRole('option', { name: 'Short' }).click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
+      .click();
+    await page.getByRole('option', { name: 'Short' }).click();
 
-      await expect(async () => {
-        const shortHeight = await getPanelHeight(dashboardPage, selectors);
-        expect(shortHeight).toBeLessThan(regularRowHeight);
-      }).toPass();
+    await expect(async () => {
+      const shortHeight = await getPanelHeight(dashboardPage, selectors);
+      expect(shortHeight).toBeLessThan(regularRowHeight);
+    }).toPass();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
-        .click();
-      await page.getByRole('option', { name: 'Tall' }).click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
+      .click();
+    await page.getByRole('option', { name: 'Tall' }).click();
 
-      await expect(async () => {
-        const tallHeight = await getPanelHeight(dashboardPage, selectors);
-        expect(tallHeight).toBeGreaterThan(regularRowHeight);
-      }).toPass();
+    await expect(async () => {
+      const tallHeight = await getPanelHeight(dashboardPage, selectors);
+      expect(tallHeight).toBeGreaterThan(regularRowHeight);
+    }).toPass();
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await expect(async () => {
-        const tallHeightAfterReload = await getPanelHeight(dashboardPage, selectors);
-        expect(tallHeightAfterReload).toBeGreaterThan(regularRowHeight);
-      }).toPass();
+    await expect(async () => {
+      const tallHeightAfterReload = await getPanelHeight(dashboardPage, selectors);
+      expect(tallHeightAfterReload).toBeGreaterThan(regularRowHeight);
+    }).toPass();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
-      ).toHaveValue('Tall');
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
+    ).toHaveValue('Tall');
 
-      await expect(async () => {
-        const tallHeightAfterEdit = await getPanelHeight(dashboardPage, selectors);
-        expect(tallHeightAfterEdit).toBeGreaterThan(regularRowHeight);
-      }).toPass();
-    });
+    await expect(async () => {
+      const tallHeightAfterEdit = await getPanelHeight(dashboardPage, selectors);
+      expect(tallHeightAfterEdit).toBeGreaterThan(regularRowHeight);
+    }).toPass();
+  });
 
-    test('can change to custom row height in auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Set custom row height');
+  test('can change to custom row height in auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Set custom row height');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      const regularRowHeight = await getPanelHeight(dashboardPage, selectors);
+    const regularRowHeight = await getPanelHeight(dashboardPage, selectors);
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
-        .click();
-      await page.getByRole('option', { name: 'Custom' }).click();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
+      .click();
+    await page.getByRole('option', { name: 'Custom' }).click();
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customRowHeight)
-        .fill('800');
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customRowHeight)
-        .blur();
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customRowHeight)
+      .fill('800');
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customRowHeight)
+      .blur();
 
-      await expect(async () => {
-        const customHeight = await getPanelHeight(dashboardPage, selectors);
-        expect(customHeight).toBeCloseTo(800, 5); // Allow some tolerance for rendering differences
-        expect(customHeight).toBeGreaterThan(regularRowHeight);
-      }).toPass();
+    await expect(async () => {
+      const customHeight = await getPanelHeight(dashboardPage, selectors);
+      expect(customHeight).toBeCloseTo(800, 5); // Allow some tolerance for rendering differences
+      expect(customHeight).toBeGreaterThan(regularRowHeight);
+    }).toPass();
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await expect(async () => {
-        const customHeightAfterReload = await getPanelHeight(dashboardPage, selectors);
-        expect(customHeightAfterReload).toBeCloseTo(800, 5);
-      }).toPass();
+    await expect(async () => {
+      const customHeightAfterReload = await getPanelHeight(dashboardPage, selectors);
+      expect(customHeightAfterReload).toBeCloseTo(800, 5);
+    }).toPass();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(
-          selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customRowHeight
-        )
-      ).toHaveValue('800');
+    await expect(
+      dashboardPage.getByGrafanaSelector(
+        selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.customRowHeight
+      )
+    ).toHaveValue('800');
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.clearCustomRowHeight)
-        .click();
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
-      ).toHaveValue('Standard');
-    });
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.clearCustomRowHeight)
+      .click();
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.rowHeight)
+    ).toHaveValue('Standard');
+  });
 
-    test('can change fill screen in auto grid layout', async ({ dashboardPage, selectors, page }) => {
-      await importTestDashboard(page, selectors, 'Set fill screen');
+  test('can change fill screen in auto grid layout', async ({ dashboardPage, selectors, page }) => {
+    await importTestDashboard(page, selectors, 'Set fill screen');
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))
-      ).toHaveCount(3);
+    await expect(dashboardPage.getByGrafanaSelector(selectors.components.Panels.Panel.title('New panel'))).toHaveCount(
+      3
+    );
 
-      await page.getByLabel('Expand Panel layout category').click();
+    await page.getByLabel('Expand Panel layout category').click();
 
-      await page.getByLabel('Auto grid').click();
+    await page.getByLabel('Auto grid').click();
 
-      // Set narrow column width first to ensure panels fit horizontally
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
-        .click();
-      await page.getByRole('option', { name: 'Narrow' }).click();
+    // Set narrow column width first to ensure panels fit horizontally
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.minColumnWidth)
+      .click();
+    await page.getByRole('option', { name: 'Narrow' }).click();
 
-      const initialHeight = await getPanelHeight(dashboardPage, selectors);
+    const initialHeight = await getPanelHeight(dashboardPage, selectors);
 
-      await dashboardPage
-        .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.fillScreen)
-        .click({ force: true });
+    await dashboardPage
+      .getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.fillScreen)
+      .click({ force: true });
 
-      await expect(async () => {
-        const fillScreenHeight = await getPanelHeight(dashboardPage, selectors);
-        expect(fillScreenHeight).toBeGreaterThan(initialHeight);
-      }).toPass();
+    await expect(async () => {
+      const fillScreenHeight = await getPanelHeight(dashboardPage, selectors);
+      expect(fillScreenHeight).toBeGreaterThan(initialHeight);
+    }).toPass();
 
-      await saveDashboard(dashboardPage, selectors);
-      await page.reload();
+    await saveDashboard(dashboardPage, selectors);
+    await page.reload();
 
-      await expect(async () => {
-        const fillScreenHeightAfterReload = await getPanelHeight(dashboardPage, selectors);
-        expect(fillScreenHeightAfterReload).toBeGreaterThan(initialHeight);
-      }).toPass();
+    await expect(async () => {
+      const fillScreenHeightAfterReload = await getPanelHeight(dashboardPage, selectors);
+      expect(fillScreenHeightAfterReload).toBeGreaterThan(initialHeight);
+    }).toPass();
 
-      await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
+    await dashboardPage.getByGrafanaSelector(selectors.components.NavToolbar.editDashboard.editButton).click();
 
-      await expect(
-        dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.fillScreen)
-      ).toBeChecked();
+    await expect(
+      dashboardPage.getByGrafanaSelector(selectors.components.PanelEditor.ElementEditPane.AutoGridLayout.fillScreen)
+    ).toBeChecked();
 
-      await expect(async () => {
-        const fillScreenHeightAfterEdit = await getPanelHeight(dashboardPage, selectors);
-        expect(fillScreenHeightAfterEdit).toBeGreaterThan(initialHeight);
-      }).toPass();
-    });
-  }
-);
+    await expect(async () => {
+      const fillScreenHeightAfterEdit = await getPanelHeight(dashboardPage, selectors);
+      expect(fillScreenHeightAfterEdit).toBeGreaterThan(initialHeight);
+    }).toPass();
+  });
+});
 
 // Helper functions
 async function importTestDashboard(page: Page, selectors: E2ESelectorGroups, title: string) {

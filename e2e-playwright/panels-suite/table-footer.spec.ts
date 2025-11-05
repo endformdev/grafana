@@ -1,6 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
 import { getColumnIdx } from './table-utils';
 
@@ -10,7 +10,7 @@ const waitForTableLoad = async (loc: Page | Locator) => {
   await expect(loc.locator('.rdg')).toBeVisible();
 };
 
-test.describe('Panels test: Table - Footer', { tag: ['@panels', '@table'] }, () => {
+test.describe('Panels test: Table - Footer', () => {
   test('Footer affected by filtering', async ({ gotoDashboardPage, selectors, page }) => {
     const dashboardPage = await gotoDashboardPage({
       uid: DASHBOARD_UID,

@@ -1,4 +1,4 @@
-import { test, expect } from '@grafana/plugin-e2e';
+import { expect, test } from '@grafana/plugin-e2e';
 
 const DASHBOARD_UID = 'Kce7z9TVz';
 
@@ -6,7 +6,7 @@ test.use({
   viewport: { width: 1280, height: 2000 },
 });
 
-test.describe('Panels test: StateTimeine', { tag: ['@panels', '@state-timeline'] }, () => {
+test.describe('Panels test: StateTimeine', () => {
   test('renders successfully', async ({ gotoDashboardPage, selectors, page }) => {
     const dashboardPage = await gotoDashboardPage({
       uid: DASHBOARD_UID,
