@@ -182,7 +182,7 @@
     "cypress": "14.3.2",
     "cypress-file-upload": "5.0.8",
     "cypress-recurse": "^1.35.3",
-    "endform": "^0.45.10",
+    "endform": "^0.45.12",
     "enquirer": "^2.4.1",
     "esbuild": "0.25.8",
     "esbuild-loader": "4.3.0",

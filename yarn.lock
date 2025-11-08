@@ -16118,42 +16118,42 @@ __metadata:
   languageName: node
   linkType: hard
 
-"endform-darwin-arm64@npm:0.45.10":
-  version: 0.45.10
-  resolution: "endform-darwin-arm64@npm:0.45.10"
+"endform-darwin-arm64@npm:0.45.12":
+  version: 0.45.12
+  resolution: "endform-darwin-arm64@npm:0.45.12"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"endform-darwin-x86@npm:0.45.10":
-  version: 0.45.10
-  resolution: "endform-darwin-x86@npm:0.45.10"
+"endform-darwin-x86@npm:0.45.12":
+  version: 0.45.12
+  resolution: "endform-darwin-x86@npm:0.45.12"
   conditions: os=darwin & cpu=x86
   languageName: node
   linkType: hard
 
-"endform-linux-arm64@npm:0.45.10":
-  version: 0.45.10
-  resolution: "endform-linux-arm64@npm:0.45.10"
+"endform-linux-arm64@npm:0.45.12":
+  version: 0.45.12
+  resolution: "endform-linux-arm64@npm:0.45.12"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"endform-linux-x86@npm:0.45.10":
-  version: 0.45.10
-  resolution: "endform-linux-x86@npm:0.45.10"
+"endform-linux-x86@npm:0.45.12":
+  version: 0.45.12
+  resolution: "endform-linux-x86@npm:0.45.12"
   conditions: os=linux & cpu=x86
   languageName: node
   linkType: hard
 
-"endform@npm:^0.45.10":
-  version: 0.45.10
-  resolution: "endform@npm:0.45.10"
+"endform@npm:^0.45.12":
+  version: 0.45.12
+  resolution: "endform@npm:0.45.12"
   dependencies:
-    endform-darwin-arm64: "npm:0.45.10"
-    endform-darwin-x86: "npm:0.45.10"
-    endform-linux-arm64: "npm:0.45.10"
-    endform-linux-x86: "npm:0.45.10"
+    endform-darwin-arm64: "npm:0.45.12"
+    endform-darwin-x86: "npm:0.45.12"
+    endform-linux-arm64: "npm:0.45.12"
+    endform-linux-x86: "npm:0.45.12"
   dependenciesMeta:
     endform-darwin-arm64:
       optional: true
@@ -16165,7 +16165,7 @@ __metadata:
       optional: true
   bin:
     endform: bin/endform
-  checksum: 10/400e818616be580c1a4228f57e72f6f04a56e1abe0a12e5647c4ebbe96e7acd76a47a75e7422af6b8de44d308ba0e626b88efd302c246540a554e79971d77dd9
+  checksum: 10/beba5282d625f1c20a3f1462a7d7ac731734dd9e5502da718b0b58886c669d91562280795a782c748b9dcfdcf6502459fab90ad5d6910dfb359b84e4085bafcc
   languageName: node
   linkType: hard
 
@@ -19055,7 +19055,7 @@ __metadata:
     date-fns: "npm:4.1.0"
     debounce-promise: "npm:3.1.2"
     diff: "npm:^8.0.0"
-    endform: "npm:^0.45.10"
+    endform: "npm:^0.45.12"
     enquirer: "npm:^2.4.1"
     esbuild: "npm:0.25.8"
     esbuild-loader: "npm:4.3.0"
