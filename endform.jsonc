@@ -1,3 +1,3 @@
 {
-  "proxyNetworkHosts": ["<loopback>", "*.dagger.local"]
+  "proxyNetworkHosts": ["<loopback>", "*.dagger.local", "host.docker.internal", "*:3001"]
 }
