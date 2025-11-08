@@ -99,12 +99,7 @@ func buildPlaywrightCommand(opts RunTestOpts) []string {
 
 	playwrightExec := strings.Split(opts.PlaywrightCommand, " ")
 
-	playwrightCommand := append(playwrightExec,
-		"--reporter",
-		strings.Join(playwrightReporters, ","),
-		"--output",
-		testResultsDir,
-	)
+	playwrightCommand := playwrightExec
 
 	if opts.Shard != "" {
 		playwrightCommand = append(playwrightCommand, "--shard", opts.Shard)
