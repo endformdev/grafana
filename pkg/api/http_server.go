@@ -780,19 +780,16 @@ func (hs *HTTPServer) mapStatic(m *web.Mux, rootDir string, dir string, prefix s
 
 	if prefix == "public/build" {
 		headers = func(c *web.Context) {
-			c.Resp.Header().Set("Cache-Control", "public, max-age=31536000")
+			c.Resp.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 		}
-	}
-
-	if hs.Cfg.Env == setting.Dev {
+	} else if prefix == "mockServiceWorker.js" {
 		headers = func(c *web.Context) {
 			c.Resp.Header().Set("Cache-Control", "max-age=0, must-revalidate, no-cache")
-		}
-	}
-
-	if prefix == "mockServiceWorker.js" {
-		headers = func(c *web.Context) {
 			c.Resp.Header().Set("Content-Type", "application/javascript")
+		}
+	} else if hs.Cfg.Env == setting.Dev {
+		headers = func(c *web.Context) {
+			c.Resp.Header().Set("Cache-Control", "max-age=0, must-revalidate, no-cache")
 		}
 	}
 

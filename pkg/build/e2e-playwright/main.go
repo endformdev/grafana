@@ -97,6 +97,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 	htmlDir := cmd.String("html-dir")
 	blobDir := cmd.String("blob-dir")
 	playwrightCommand := cmd.String("playwright-command")
+	endformAPIKey := os.Getenv("ENDFORM_API_KEY")
 	// pa11yConfigPath := cmd.String("config")
 	// pa11yResultsPath := cmd.String("results")
 	// noThresholdFail := cmd.Bool("no-threshold-fail")
@@ -194,6 +195,7 @@ func run(ctx context.Context, cmd *cli.Command) error {
 		BlobReportExportDir:  blobDir,
 		PlaywrightCommand:    playwrightCommand,
 		CloudPluginCreds:     cloudPluginCreds,
+		EndformAPIKey:        endformAPIKey,
 	}
 
 	c, runErr := RunTest(ctx, d, runOpts)

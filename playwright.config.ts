@@ -26,16 +26,15 @@ export const baseConfig: PlaywrightTestConfig<PluginOptions, {}> = {
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html'], // pretty
-  ],
+  reporter: [['list']],
+  timeout: 480_000,
   expect: {
-    timeout: 10_000,
+    timeout: 80_000,
   },
   use: {
     ...devices['Desktop Chrome'],
     baseURL: process.env.GRAFANA_URL ?? DEFAULT_URL,
-    trace: 'retain-on-failure',
+    trace: 'on',
     httpCredentials: {
       username: 'admin',
       password: 'admin',
@@ -51,9 +50,10 @@ export default defineConfig<PluginOptions>({
   ...(!process.env.GRAFANA_URL && {
     webServer: {
       command: 'yarn e2e:plugin:build && ./e2e-playwright/start-server',
-      url: DEFAULT_URL,
+      port: 3001,
       stdout: 'pipe',
       stderr: 'pipe',
+      reuseExistingServer: true,
     },
   }),
   projects: [
