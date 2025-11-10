@@ -25,6 +25,7 @@ type RunTestOpts struct {
 	TestResultsExportDir string
 	PlaywrightCommand    string
 	CloudPluginCreds     *dagger.File
+	EndformAPIKey        string
 }
 
 func RunTest(
@@ -54,6 +55,10 @@ func RunTest(
 	if opts.CloudPluginCreds != nil {
 		fmt.Println("DEBUG: CloudPluginCreds file is provided, mounting to /tmp/outputs.json")
 		e2eContainer = e2eContainer.WithMountedFile("/tmp/outputs.json", opts.CloudPluginCreds)
+	}
+
+	if opts.EndformAPIKey != "" {
+		e2eContainer = e2eContainer.WithEnvVariable("ENDFORM_API_KEY", opts.EndformAPIKey)
 	}
 
 	e2eContainer = e2eContainer.WithExec(playwrightCommand, dagger.ContainerWithExecOpts{
