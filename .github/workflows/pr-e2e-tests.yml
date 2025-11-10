@@ -102,14 +102,16 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
+
       - uses: actions/download-artifact@v6
         with:
           name: grafana-tar-gz
+
       - name: Run E2E tests
         uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644
-        env:
-          ENDFORM_API_KEY: ${{ secrets.ENDFORM_API_KEY }}
         with:
           version: 0.18.8
           verb: run
           args: go run ./pkg/build/e2e-playwright --package=grafana.tar.gz --shard=${{ matrix.shard }}/${{ matrix.shardTotal }} --blob-dir=./blob-report
+        env:
+          ENDFORM_API_KEY: ${{ secrets.ENDFORM_API_KEY }}
