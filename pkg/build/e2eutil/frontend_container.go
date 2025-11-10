@@ -55,7 +55,10 @@ func GetVersions(ctx context.Context, src *dagger.Directory) (Deps, error) {
 
 func WithNode(d *dagger.Client, version string) *dagger.Container {
 	nodeImage := fmt.Sprintf("node:%s-slim", strings.TrimPrefix(version, "v"))
-	return d.Container().From(nodeImage)
+	return d.Container().From(nodeImage).
+		WithExec([]string{"apt-get", "update"}).
+		WithExec([]string{"apt-get", "install", "-y", "ca-certificates"}).
+		WithExec([]string{"rm", "-rf", "/var/lib/apt/lists/*"})
 }
 
 func WithYarnInstall(d *dagger.Client, base *dagger.Container, yarnHostSrc *dagger.Directory) *dagger.Container {
