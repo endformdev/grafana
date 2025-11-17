@@ -7,6 +7,8 @@ export const testDirRoot = 'e2e-playwright';
 const pluginDirRoot = path.join(testDirRoot, 'plugin-e2e');
 export const DEFAULT_URL = 'http://localhost:3001';
 
+process.env.GRAFANA_VERSION = '12.2.1';
+
 export function withAuth(project: Project): Project {
   project.dependencies ??= [];
   project.use ??= {};
