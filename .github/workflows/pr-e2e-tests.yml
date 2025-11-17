@@ -182,7 +182,6 @@ jobs:
       - name: Run E2E tests
         run: |
           export CI=true
-          export GRAFANA_URL=http://localhost:3001
           export PLAYWRIGHT_HTML_OPEN=never
           export PLAYWRIGHT_BLOB_OUTPUT_DIR=./blob-report
           export ENDFORM_API_KEY=${{ secrets.ENDFORM_API_KEY }}
