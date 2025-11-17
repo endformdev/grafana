@@ -44,14 +44,14 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.3'
-          
+          go-version: "1.25.3"
+
       - name: Setup Node.js
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '24.11.0'
-          
+          node-version: "24.11.0"
+
       - name: Cache Node modules
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache@v4
@@ -62,12 +62,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
-            
+
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           yarn install --frozen-lockfile
-          
+
       - name: Build Grafana
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
@@ -135,13 +135,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.3'
-          
+          go-version: "1.25.3"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.11.0'
-          
+          node-version: "24.11.0"
+
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
@@ -151,20 +151,20 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-
-            
+
       - name: Install dependencies
         run: |
           yarn install --frozen-lockfile
-          
+
       - name: Build test plugins
         run: |
           yarn e2e:plugin:build
-          
+
       - name: Extract Grafana
         run: |
           mkdir -p grafana-extracted
           tar --strip-components=1 -xzf grafana.tar.gz -C grafana-extracted
-          
+
       - name: Start Grafana server
         run: |
           cd grafana-extracted
@@ -175,19 +175,19 @@ jobs:
             --server.http.addr=0.0.0.0 &
           GRAFANA_PID=$!
           echo "GRAFANA_PID=$GRAFANA_PID" >> $GITHUB_ENV
-          
+
           # Wait for Grafana to be ready
           timeout 60 bash -c 'until curl -f http://localhost:3001/api/health; do sleep 2; done'
-          
+
       - name: Run E2E tests
         run: |
           export CI=true
           export PLAYWRIGHT_HTML_OPEN=never
           export PLAYWRIGHT_BLOB_OUTPUT_DIR=./blob-report
           export ENDFORM_API_KEY=${{ secrets.ENDFORM_API_KEY }}
-          
+
           yarn e2e:playwright --shard=${{ matrix.shard }}/${{ matrix.shardTotal }}
-          
+
       - name: Stop Grafana server
         if: always()
         run: |
