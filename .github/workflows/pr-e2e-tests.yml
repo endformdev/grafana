@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         shard: [1]
-        shardTotal: [8]
+        shardTotal: [40]
 
     steps:
       - uses: actions/checkout@v5
