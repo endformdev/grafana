@@ -19,99 +19,7 @@ env:
   RUNNER_DEBUG: 1
 
 jobs:
-  build-grafana:
-    name: Build & Package Grafana
-    runs-on: blacksmith-8vcpu-ubuntu-2404
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-
-      # TODO: add a cleanup workflow to remove the cache when the PR is closed
-      # https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy
-      # TODO: maybe we could just use the cache to store the build, instead of uploading as an artifact?
-      - uses: actions/cache@v4
-        id: cache
-        with:
-          key: "build-grafana-${{ runner.os }}-${{ hashFiles('yarn.lock', 'public/*',  'packages/*', 'conf/*', 'pkg/**/*.go', '**/go.mod', '**/go.sum', '!**_test.go', '!**.test.ts', '!**.test.tsx', 'Dockerfile') }}"
-          path: |
-            build-dir
-
-      # If no cache hit, build Grafana
-      - name: Setup Go
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25.3"
-
-      - name: Setup Node.js
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24.11.0"
-
-      - name: Cache Node modules
-        if: steps.cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            .yarn/cache
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          yarn install --frozen-lockfile
-
-      - name: Build Grafana
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          go run ./pkg/build/cmd artifacts -a targz:grafana:linux/amd64 -a docker:grafana:linux/amd64 --grafana-dir="${PWD}" > out.txt
-      - name: Cat built artifact
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: cat out.txt
-      - name: Move built artifacts
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p build-dir
-          mv "$(grep 'grafana_.*tar.gz$' out.txt | grep -Fv -m1 'docker')" build-dir/grafana.tar.gz
-          mv "$(grep 'grafana_.*docker.tar.gz$' out.txt)" build-dir/grafana.docker.tar.gz
-
-      # If cache hit, validate the artifact is present
-      - name: Validate artifact
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: |
-          if [ ! -f build-dir/grafana.tar.gz ]; then
-            echo "Error: build-dir/grafana.tar.gz not found in cache"
-            exit 1
-          fi
-
-      - name: Set artifact name
-        run: echo "artifact=grafana-server-${{github.run_number}}" >> "$GITHUB_OUTPUT"
-        id: artifact
-
-      - name: Upload grafana.tar.gz
-        uses: actions/upload-artifact@v5
-        with:
-          retention-days: 1
-          name: grafana-tar-gz
-          path: build-dir/grafana.tar.gz
-
-      - name: Upload grafana docker tarball
-        uses: actions/upload-artifact@v5
-        with:
-          retention-days: 1
-          name: grafana-docker-tar-gz
-          path: build-dir/grafana.docker.tar.gz
-
   run-playwright-tests:
-    needs:
-      - build-grafana
     name: Playwright E2E tests (${{ matrix.shard }}/${{ matrix.shardTotal }})
     runs-on: blacksmith-8vcpu-ubuntu-2404
     permissions:
@@ -127,10 +35,6 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
-
-      - uses: actions/download-artifact@v6
-        with:
-          name: grafana-tar-gz
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -160,24 +64,14 @@ jobs:
         run: |
           yarn e2e:plugin:build
 
-      - name: Extract Grafana
-        run: |
-          mkdir -p grafana-extracted
-          tar --strip-components=1 -xzf grafana.tar.gz -C grafana-extracted
-
       - name: Start Grafana server
         run: |
-          cd grafana-extracted
-          ./bin/grafana-server server \
-            --home-path=/tmp/grafana \
-            --config=../scripts/grafana-server/custom.ini \
-            --http-port=3001 \
-            --server.http.addr=0.0.0.0 &
+          make run &
           GRAFANA_PID=$!
           echo "GRAFANA_PID=$GRAFANA_PID" >> $GITHUB_ENV
 
           # Wait for Grafana to be ready
-          timeout 60 bash -c 'until curl -f http://localhost:3001/api/health; do sleep 2; done'
+          timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
 
       - name: Run E2E tests
         run: |
