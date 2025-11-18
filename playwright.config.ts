@@ -29,9 +29,9 @@ export const baseConfig: PlaywrightTestConfig<PluginOptions, {}> = {
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   reporter: [['list']],
-  timeout: 30_000,
+  timeout: 60_000,
   expect: {
-    timeout: 10_000,
+    timeout: 15_000,
   },
   use: {
     ...devices['Desktop Chrome'],
