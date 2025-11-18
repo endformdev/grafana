@@ -25,9 +25,8 @@ func WithFrontendContainer(ctx context.Context, d *dagger.Client, yarnHostSrc *d
 	}
 
 	nodeBase := WithNode(d, deps.NodeVersion)
-	playwrightBase := WithPlaywright(d, nodeBase, deps.PlaywrightVersion)
 
-	return WithYarnInstall(d, playwrightBase, yarnHostSrc), nil
+	return WithYarnInstall(d, nodeBase, yarnHostSrc), nil
 }
 
 func GetVersions(ctx context.Context, src *dagger.Directory) (Deps, error) {
@@ -56,15 +55,10 @@ func GetVersions(ctx context.Context, src *dagger.Directory) (Deps, error) {
 
 func WithNode(d *dagger.Client, version string) *dagger.Container {
 	nodeImage := fmt.Sprintf("node:%s-slim", strings.TrimPrefix(version, "v"))
-	return d.Container().From(nodeImage)
-}
-
-func WithPlaywright(d *dagger.Client, base *dagger.Container, version string) *dagger.Container {
-	brCache := d.CacheVolume("playwright-browsers")
-	return base.
-		WithEnvVariable("PLAYWRIGHT_BROWSERS_PATH", "/playwright-cache").
-		WithMountedCache("/playwright-cache", brCache).
-		WithExec([]string{"npx", "-y", "playwright@" + version, "install", "--with-deps"})
+	return d.Container().From(nodeImage).
+		WithExec([]string{"apt-get", "update"}).
+		WithExec([]string{"apt-get", "install", "-y", "ca-certificates"}).
+		WithExec([]string{"rm", "-rf", "/var/lib/apt/lists/*"})
 }
 
 func WithYarnInstall(d *dagger.Client, base *dagger.Container, yarnHostSrc *dagger.Directory) *dagger.Container {

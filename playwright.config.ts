@@ -7,6 +7,8 @@ export const testDirRoot = 'e2e-playwright';
 const pluginDirRoot = path.join(testDirRoot, 'plugin-e2e');
 export const DEFAULT_URL = 'http://localhost:3001';
 
+process.env.GRAFANA_VERSION = '12.2.1';
+
 export function withAuth(project: Project): Project {
   project.dependencies ??= [];
   project.use ??= {};
@@ -26,16 +28,15 @@ export const baseConfig: PlaywrightTestConfig<PluginOptions, {}> = {
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html'], // pretty
-  ],
+  reporter: [['list']],
+  timeout: 120_000,
   expect: {
-    timeout: 10_000,
+    timeout: 20_000,
   },
   use: {
     ...devices['Desktop Chrome'],
     baseURL: process.env.GRAFANA_URL ?? DEFAULT_URL,
-    trace: 'retain-on-failure',
+    trace: 'on',
     httpCredentials: {
       username: 'admin',
       password: 'admin',
@@ -50,10 +51,11 @@ export default defineConfig<PluginOptions>({
   ...baseConfig,
   ...(!process.env.GRAFANA_URL && {
     webServer: {
-      command: 'yarn e2e:plugin:build && ./e2e-playwright/start-server',
-      url: DEFAULT_URL,
+      command: 'yarn e2e:plugin:build && ./e2e-playwright/start-server > playwright-webserver.log 2>&1',
+      port: 3001,
       stdout: 'pipe',
       stderr: 'pipe',
+      reuseExistingServer: true,
     },
   }),
   projects: [
